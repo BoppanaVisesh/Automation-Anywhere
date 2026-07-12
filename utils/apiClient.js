@@ -1,3 +1,5 @@
+import crypto from 'node:crypto';
+
 /**
  * API client utilities for the Automation Anywhere portal.
  */
@@ -282,4 +284,90 @@ export async function createProcess(token, folderId, processName) {
     status: response.status,
     body: responseBody
   };
+}
+
+/**
+ * Saves workflow/process content with InitialStep, FormStep, and exit nodes.
+ * Note: The Content-Type header must be application/vnd.aa.workflow for this specific endpoint.
+ * 
+ * @param {string} token - The auth token.
+ * @param {string|number} fileId - The created process file ID.
+ * @param {string} formRepositoryPath - Repository path of the dependent form.
+ * @returns {Promise<Object>} Object containing response status and text body.
+ */
+export async function saveProcessContent(token, fileId, formRepositoryPath) {
+  const initialStepUid = crypto.randomUUID();
+  const formStepUid = crypto.randomUUID();
+  const exitUid = crypto.randomUUID();
+
+  const payload = {
+    nodes: [
+      {
+        commandName: "InitialStep",
+        packageName: "HBCWorkflow",
+        uid: initialStepUid,
+        attributes: [
+          { name: "caseTitle", value: { type: "STRING", string: "API Process Request" } },
+          { name: "stepTitle", value: { type: "STRING", string: "Request Creation" } },
+          { name: "initMethod", value: { string: "INIT_BY_INPUT" } },
+          { name: "aaFileStorage", value: { type: "STRING", string: "aari" } },
+          { name: "piiTag", value: { type: "STRING", string: "" } }
+        ],
+        children: [
+          {
+            children: [],
+            attributes: [{ name: "stepId", value: { string: formStepUid } }],
+            commandName: "schedule",
+            packageName: "HBCWorkflow",
+            uid: crypto.randomUUID()
+          }
+        ],
+        layout: { x: 140, y: 140, outgoingEdgeSelfHandle: "HANDLEBOTTOM" }
+      },
+      {
+        commandName: "FormStep",
+        packageName: "HBCWorkflow",
+        uid: formStepUid,
+        attributes: [
+          { name: "stepAlias", value: { type: "STRING", string: "Form" } },
+          { name: "stepTitle", value: { type: "STRING", string: "" } },
+          { name: "hidden", value: { type: "BOOLEAN", boolean: "false" } },
+          { name: "readOnly", value: { type: "BOOLEAN", boolean: "false" } },
+          { name: "formButtons", value: { dictionary: [{ value: { string: "primary" }, key: "Submit" }], type: "DICTIONARY" } },
+          { name: "showInRequested", value: { type: "BOOLEAN", boolean: false } },
+          { name: "stepInput", value: { type: "TASKBOT", taskbotFile: { type: "FILE", string: formRepositoryPath } } },
+          { name: "piiTag", value: { type: "STRING", string: "" } }
+        ],
+        children: [
+          {
+            commandName: "exit",
+            packageName: "HBCWorkflow",
+            uid: exitUid,
+            attributes: [{ name: "caseExit", value: { string: "SUCCESS" } }],
+            layout: { x: 140, y: 540, incomingEdgeSelfHandle: "HANDLETOP", incomingEdgeSourceHandle: "HANDLEBOTTOM" }
+          }
+        ],
+        layout: { x: 127, y: 337, incomingEdgeSelfHandle: "HANDLETOP", incomingEdgeSourceHandle: "HANDLEBOTTOM", outgoingEdgeSelfHandle: "HANDLEBOTTOM" }
+      }
+    ],
+    orphans: [],
+    swimlanes: [],
+    swimlaneStacking: "LEFT_TO_RIGHT",
+    variables: [],
+    isProcessV2: true
+  };
+
+  const response = await fetch(
+    `https://community.cloud.automationanywhere.digital/v2/repository/files/${fileId}/content?hasErrors=false`,
+    {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/vnd.aa.workflow',
+        'X-Authorization': token
+      },
+      body: JSON.stringify(payload)
+    }
+  );
+
+  return { status: response.status, body: await response.text() };
 }
