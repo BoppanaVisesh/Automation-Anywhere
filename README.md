@@ -58,7 +58,7 @@ AA_PASSWORD=your-password
 
 ### 3. Run the UI test (Use Case 1)
 ```bash
-npx playwright test tests/UI/CreateForm.spec.js --project=chromium
+npx playwright test tests/UI/CreateForm.spec.js --project=chromium --headed --workers=1
 ```
 
 ### 4. Run the API test (Use Case 2)
