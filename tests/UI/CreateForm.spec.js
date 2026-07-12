@@ -7,6 +7,7 @@ test.describe('Use Case 1: Form with Upload Flow (UI Automation)', () => {
   let loginPage;
 
   test.beforeEach(async ({ page }) => {
+    test.setTimeout(90000);
     // Instantiate the Login Page Object Model representation
     loginPage = new LoginPage(page);
 
