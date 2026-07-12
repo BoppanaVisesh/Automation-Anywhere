@@ -12,7 +12,7 @@ test.describe('API Form and Process Creation Flow (API Automation)', () => {
     expect(token).toBeDefined();
   });
 
-  test('should create a form, fetch metadata, update form content, and save dependencies via API', async () => {
+  test('should create a form and a linked process via API, and save all dependencies', async () => {
     const formName = `API_Assignment_Test_${Date.now()}`;
 
     // Step 1: Create Form in the verified BOTS_FOLDER_ID folder
@@ -22,6 +22,8 @@ test.describe('API Form and Process Creation Flow (API Automation)', () => {
     
     const formId = createRes.body.id;
     expect(formId).toBeDefined();
+    expect(typeof formId).toBe('string');
+    expect(formId.length).toBeGreaterThan(0);
     console.log(`Form created successfully. ID: ${formId}`);
 
     // Step 2: Retrieve Form Metadata
@@ -49,6 +51,8 @@ test.describe('API Form and Process Creation Flow (API Automation)', () => {
     expect(createProcessRes.status).toBe(201);
     const processId = createProcessRes.body.id;
     expect(processId).toBeDefined();
+    expect(typeof processId).toBe('string');
+    expect(processId.length).toBeGreaterThan(0);
     console.log(`Process created successfully. ID: ${processId}`);
 
     // Step 7: Save Process Content (3-node workflow: InitialStep -> FormStep -> exit)

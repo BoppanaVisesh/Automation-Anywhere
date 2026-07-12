@@ -241,7 +241,7 @@ export async function saveDependencies(token, fileId, childFileIds = []) {
   
   console.log('Save Dependencies Request URL:', url);
   console.log('Save Dependencies Request Body:', body);
-  console.log('Save Dependencies Request Headers:', JSON.stringify(getAuthHeaders(token)));
+  // console.log('Save Dependencies Request Headers:', JSON.stringify(getAuthHeaders(token)));
 
   const response = await fetch(url, {
     method: 'PUT',

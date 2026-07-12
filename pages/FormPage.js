@@ -227,10 +227,9 @@ export class FormPage {
   }
 
   /**
-   * Verifies that the form was saved successfully.
-   * 
-   * TODO: Update this placeholder assertion once the application's runtime save success behavior
-   * (e.g., specific success toast message, redirect URL, or status indicator) is confirmed.
+   * Verifies that the form was saved successfully by checking for the 
+   * success toast notification, which renders outside the editor iframe 
+   * on the main page.
    */
   async verifySaveSuccess() {
     console.log("Verifying save success");
